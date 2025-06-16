@@ -2,9 +2,13 @@
 # edited by Peter Kasson
 """ Routines for gamma fits."""
 
+import numpy as np
+import scipy
+
 # gamma pdf
 def gamma(k, N, x):
-  return ((k**N)*(x**(N-1)))*np.exp(-k*x)/scipy.special.factorial(N) # formula for convolution of N exponentials, 1 k for each step
+  # formula for convolution of N exponentials, 1 k for each step
+  return ((k**N)*(x**(N-1)))*np.exp(-k*x) / scipy.special.factorial(N)
 
 def simulate_gamma(k, N, num_times=300, upper_time_bound=500):
   # set things up
@@ -17,8 +21,10 @@ def simulate_gamma(k, N, num_times=300, upper_time_bound=500):
   total_iters = 0
   idx = 0
   while idx < num_times:
-    # R = np.random.rand(lower_time_bound, upper_time_bound) # propose a dwell time in the range of ks
-    R = np.random.random_sample()*upper_time_bound # propose a dwell time in the range of ks
+    # propose a dwell time in the range of ks
+    # R = np.random.rand(lower_time_bound, upper_time_bound)
+    # propose a dwell time in the range of ks
+    R = np.random.random_sample()*upper_time_bound
     prob_R = gamma(k, N, R) # get probability of dwell time according to pdf
     # print(R, prob_R)
     prob_accept = np.random.rand()

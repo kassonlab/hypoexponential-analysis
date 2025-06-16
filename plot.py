@@ -1,12 +1,15 @@
 # Code 2024-2025 by Oyin Adenekan
 # edited by Peter Kasson
-# Plots for MCMC hypoexponential fitting 
+"""Plots for MCMC hypoexponential fitting."""
 
 import numpy as np
 import matplotlib.pyplot as plt
 
+from core import conv_1_exps, conv_2_exps, conv_3_exps
+from fits import dwell_times_to_ecdf_independent_max, simulate_conv_exps
+
 # plotting the mcmc fit
-def ks_likelihood_plot(ks, likelihoods, rates, sim_data):
+def ks_likelihood_plot(ks, likelihoods, rates, sim_data, title='KS_likelihoods'):
 
   # determine which ks are which ks -- sort each iteration of mcmc from least to greatest
   sorted_ks = np.sort(ks, axis=0)
@@ -39,7 +42,7 @@ def ks_likelihood_plot(ks, likelihoods, rates, sim_data):
   plt.legend()
 
 # simulate plot of ecdfs of different steps compared to one another
-def simulate_result_plot_ecdf(actual_data, rates_1_step, rates_2_step, rates_3_step, num_times, upper_time_bound):
+def simulate_result_plot_ecdf(actual_data, rates_1_step, rates_2_step, rates_3_step, num_times=300, upper_time_bound=1200):
 
   # lets get a max
   max_time = np.max(np.concatenate((actual_data, rates_1_step, rates_2_step, rates_3_step), axis=None))
@@ -49,18 +52,18 @@ def simulate_result_plot_ecdf(actual_data, rates_1_step, rates_2_step, rates_3_s
   # actual_ecdf = dwell_times_to_ecdf(actual_data)
   actual_x, actual_ecdf = dwell_times_to_ecdf_independent_max(actual_data, max_time, num_time_intervals)
 
-  simulated_data_1 = simulate_conv_exps(conv_1_exps, rates_1_step, num_times=300, upper_time_bound=upper_time_bound)
+  simulated_data_1 = simulate_conv_exps(conv_1_exps, rates_1_step, num_times=num_times, upper_time_bound=upper_time_bound)
   # simulated_data_ecdf_1 = dwell_times_to_ecdf(simulated_data_1)
   x_1, simulated_data_ecdf_1 = dwell_times_to_ecdf_independent_max(simulated_data_1, max_time, num_time_intervals)
 
 
 
-  simulated_data_2 = simulate_conv_exps(conv_2_exps, rates_2_step, num_times=300, upper_time_bound=upper_time_bound)
+  simulated_data_2 = simulate_conv_exps(conv_2_exps, rates_2_step, num_times=num_times, upper_time_bound=upper_time_bound)
   # simulated_data_ecdf_2 = dwell_times_to_ecdf(simulated_data_2)
   x_2, simulated_data_ecdf_2 = dwell_times_to_ecdf_independent_max(simulated_data_2, max_time, num_time_intervals)
 
 
-  simulated_data_3 = simulate_conv_exps(conv_3_exps, rates_3_step, num_times=300, upper_time_bound=upper_time_bound)
+  simulated_data_3 = simulate_conv_exps(conv_3_exps, rates_3_step, num_times=num_times, upper_time_bound=upper_time_bound)
   # simulated_data_ecdf_3 = dwell_times_to_ecdf(simulated_data_3)
   x_3, simulated_data_ecdf_3 = dwell_times_to_ecdf_independent_max(simulated_data_3, max_time, num_time_intervals)
 

@@ -1,7 +1,7 @@
 
 # Original code 2024-2025 by Oyin Adenekan
 # edited by Peter Kasson
-# functions for MCMC sampling of hypoexponential distributions
+"""functions for MCMC sampling of hypoexponential distributions."""
 
 import numpy as np
 import scipy
@@ -137,12 +137,12 @@ def do_mcmc(num_iters, num_rates, datas, conv_func):
   print_flag = 1
 
 
-  for iter in range(1, num_iters):
-    if iter > 100:
+  for i in range(1, num_iters):
+    if i > 100:
       print_flag = 0
-    if iter % 100 == 0:
-      print_flag = 1;
-    # if print_flag: print('iter', iter)
+    if i % 100 == 0:
+      print_flag = 1
+    # if print_flag: print('iteration', i)
 
 
     for idx in range(num_rates):
@@ -156,7 +156,7 @@ def do_mcmc(num_iters, num_rates, datas, conv_func):
 
       # propose a proposal
       k_proposed = np.random.gamma(shape=1, scale=k_current[idx])
-      proposals[idx, iter] = k_proposed
+      proposals[idx, i] = k_proposed
 
       # update current list and keep pre proposal number
       pre_proposal_rate = k_current[idx]
@@ -173,17 +173,17 @@ def do_mcmc(num_iters, num_rates, datas, conv_func):
       # accept_ratio = new_likelihood/prev_likelihood
       # if print_flag: print('accept ratio: {}'.format(accept_ratio))
       prob_accept = accept_ratio if accept_ratio < 1 else 1
-      accept_probs[idx, iter-1] = accept_ratio
+      accept_probs[idx, i-1] = accept_ratio
       # if print_flag: print('calculated accept prob: {}, actual accept prob: {}'.format(accept_ratio, prob_accept))
       if accept_ratio**temperature >= np.random.uniform():
-        ks[idx, iter] = k_proposed
-        likelihood_curve[iter] = new_likelihood
+        ks[idx, i] = k_proposed
+        likelihood_curve[i] = new_likelihood
         # k_current[idx] = k_proposed
-        accepts[idx, iter] = 1
+        accepts[idx, i] = 1
       else:
         k_current[idx] = pre_proposal_rate
-        ks[idx, iter] = k_current[idx]
-        likelihood_curve[iter] = prev_likelihood
+        ks[idx, i] = k_current[idx]
+        likelihood_curve[i] = prev_likelihood
 
   return ks, likelihood_curve
 
@@ -200,9 +200,9 @@ def dwell_times_to_ecdf(dwell_times):
   return ecdf
 
 # dwell times, w independent max value, to ecdf
-def dwell_times_to_ecdf_independent_max(dwell_times, max, length):
+def dwell_times_to_ecdf_independent_max(dwell_times, max_time, length):
   # create an x-axis based on given max time
-  x_axis = np.linspace(0, max, length)
+  x_axis = np.linspace(0, max_time, length)
   ecdf = np.zeros((length))
   for idx in range(len(x_axis)):
     num_dwell_times_in_interval = len(dwell_times[dwell_times <= x_axis[idx]])

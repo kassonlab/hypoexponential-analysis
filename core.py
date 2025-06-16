@@ -2,29 +2,39 @@
 # edited by Peter Kasson
 """Core routines for hypoexponentials."""
 
+import numpy as np
+
 # calculate hyperexponential pdf
 def conv_1_exps(rates, t):
   return rates[0]*np.exp(-rates[0]*t)
+
 def conv_2_exps(rates, t):
   if rates[0] == rates[1]:
     return rates[0]*rates[1]*t*np.exp(-rates[0]*t)
   else:
-    return ((rates[0]*rates[1])/(rates[1]-rates[0]))*(np.exp(-rates[0]*t)-np.exp(-rates[1]*t))
+    return (((rates[0]*rates[1])/(rates[1] - rates[0]))
+            *(np.exp(-rates[0]*t) - np.exp(-rates[1]*t)))
+
 def conv_3_exps(rates, t):
   first_term = (rates[0]*rates[1]*rates[2])/(rates[1]-rates[0])
-  second_term_1  = (np.exp(-rates[0]*t)-np.exp(-rates[2]*t))/(-rates[0]+rates[2])
-  second_term_2 =  (np.exp(-rates[1]*t)-np.exp(-rates[2]*t))/(-rates[1]+rates[2])
+  second_term_1  = ((np.exp(-rates[0]*t) - np.exp(-rates[2]*t))
+                    / (-rates[0] + rates[2]))
+  second_term_2 =  ((np.exp(-rates[1]*t) - np.exp(-rates[2]*t))
+                    / (-rates[1] + rates[2]))
   return first_term*(second_term_1 - second_term_2)
+
 def conv_4_exps(rates, t):
   k1 = rates[0]
   k2 = rates[1]
   k3 = rates[2]
   k4 = rates[3]
   pre_num = k1*k2*k3*k4
-  mid_term = (np.exp(-k1*t) - np.exp(-k3*t))/(k3 - k1) - (np.exp(-k2*t) - np.exp(-k3*t))/(k3 - k2)
+  mid_term = ((np.exp(-k1*t) - np.exp(-k3*t))/(k3 - k1)
+              - (np.exp(-k2*t) - np.exp(-k3*t))/(k3 - k2))
   k4_term = 1/k4 - np.exp(-k4*t)/k4
   big_denom = k2-k1
   return (pre_num*mid_term*k4_term)/big_denom
+
 def conv_5_exps(rates, t):
   k1 = rates[0]
   k2 = rates[1]

@@ -2,6 +2,14 @@
 # edited by Peter Kasson
 """ Routines to apply hypoexponential fits, select best model, sample from process to compare dwell times."""
 
+import numpy as np
+import scipy
+
+from core import conv_1_exps, conv_2_exps, conv_3_exps, conv_4_exps, conv_5_exps
+from core import calculate_aicc
+from fits import do_mcmc
+from gillespie import sim_gillespie_five_step, sim_gillespie_four_step, sim_gillespie_three_step, sim_gillespie_two_step, sim_gillespie_one_step
+
 # dwell times to ecdf
 def dwell_times_to_ecdf(dwell_times):
   num_dwell_times = len(dwell_times)
@@ -15,9 +23,9 @@ def dwell_times_to_ecdf(dwell_times):
   return ecdf
 
 # dwell times, w independent max value, to ecdf
-def dwell_times_to_ecdf_independent_max(dwell_times, max, length):
+def dwell_times_to_ecdf_independent_max(dwell_times, max_time, length):
   # create an x-axis based on given max time
-  x_axis = np.linspace(0, max, length)
+  x_axis = np.linspace(0, max_time, length)
   ecdf = np.zeros((length))
   for idx in range(len(x_axis)):
     num_dwell_times_in_interval = len(dwell_times[dwell_times <= x_axis[idx]])
@@ -25,7 +33,7 @@ def dwell_times_to_ecdf_independent_max(dwell_times, max, length):
   return x_axis, ecdf
 
 # make a function to create information for ecdf
-def make_ecdf_inputs(data, returnAll = False):
+def make_ecdf_inputs(data, return_all = False, mcmc_steps=10000, burnin=100):
   # make ecdf for actual data
   data_ecdf = scipy.stats.ecdf(data)
   num_times = data_ecdf.cdf.quantiles.shape[0]
@@ -33,27 +41,27 @@ def make_ecdf_inputs(data, returnAll = False):
 
 
   # fit and simulate for 1
-  ks_1, likelihoods_1 = do_mcmc(1000, 1, data, conv_1_exps)
+  ks_1, likelihoods_1 = do_mcmc(mcmc_steps, 1, data, conv_1_exps)
   max_likelihood_idx_1 = np.argmax(likelihoods_1)
   ks_max_likelihood_1 = ks_1[:, max_likelihood_idx_1]
 
   # fit and simulate for 2
-  ks_2, likelihoods_2 = do_mcmc(1000, 2, data, conv_2_exps)
+  ks_2, likelihoods_2 = do_mcmc(mcmc_steps, 2, data, conv_2_exps)
   max_likelihood_idx_2 = np.argmax(likelihoods_2)
   ks_max_likelihood_2 = ks_2[:, max_likelihood_idx_2]
 
   # fit and simulate for 3
-  ks_3, likelihoods_3 = do_mcmc(1000, 3, data, conv_3_exps)
+  ks_3, likelihoods_3 = do_mcmc(mcmc_steps, 3, data, conv_3_exps)
   max_likelihood_idx_3 = np.argmax(likelihoods_3)
   ks_max_likelihood_3 = ks_3[:, max_likelihood_idx_3]
 
   # fit and simulate for 4
-  ks_4, likelihoods_4 = do_mcmc(1000, 4, data, conv_4_exps)
+  ks_4, likelihoods_4 = do_mcmc(mcmc_steps, 4, data, conv_4_exps)
   max_likelihood_idx_4 = np.argmax(likelihoods_4)
   ks_max_likelihood_4 = ks_4[:, max_likelihood_idx_4]
 
   # fit and simulate for 5
-  ks_5, likelihoods_5 = do_mcmc(1000, 5, data, conv_5_exps)
+  ks_5, likelihoods_5 = do_mcmc(mcmc_steps, 5, data, conv_5_exps)
   max_likelihood_idx_5 = np.argmax(likelihoods_5)
   ks_max_likelihood_5 = ks_5[:, max_likelihood_idx_5]
 
@@ -99,7 +107,7 @@ def make_ecdf_inputs(data, returnAll = False):
     upper_time_bound = int(1/min_rate*10*1.5)
     simulated_data_under_hypo_fitted_rates = sim_gillespie_five_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
 
-  if returnAll:
+  if return_all:
     kmax_all = (ks_max_likelihood_1, ks_max_likelihood_2, ks_max_likelihood_3, ks_max_likelihood_4, ks_max_likelihood_5)
     ks_all = (ks_1[:, burnin:], ks_2[:, burnin:], ks_3[:, burnin:], ks_4[:, burnin:], ks_5[:, burnin:])
     likelihoods_all = [likelihoods_1[burnin:], likelihoods_2[burnin:], likelihoods_3[burnin:], likelihoods_4[burnin:], likelihoods_5[burnin:]]
