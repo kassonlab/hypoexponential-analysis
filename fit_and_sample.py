@@ -6,6 +6,7 @@ import numpy as np
 import scipy
 
 from . import core
+from . import eval
 from . import fits
 from . import gillespie
 
@@ -66,11 +67,11 @@ def make_ecdf_inputs(data, return_all = False, mcmc_steps=10000, burnin=100):
 
 
   # find optimal number for N, aicc
-  aicc_1 = core.calculate_aicc(likelihoods_1[burnin:], 1, num_times)
-  aicc_2 = core.calculate_aicc(likelihoods_2[burnin:], 2, num_times)
-  aicc_3 = core.calculate_aicc(likelihoods_3[burnin:], 3, num_times)
-  aicc_4 = core.calculate_aicc(likelihoods_4[burnin:], 4, num_times)
-  aicc_5 = core.calculate_aicc(likelihoods_5[burnin:], 5, num_times)
+  aicc_1 = eval.calculate_aicc(likelihoods_1[burnin:], 1, num_times)
+  aicc_2 = eval.calculate_aicc(likelihoods_2[burnin:], 2, num_times)
+  aicc_3 = eval.calculate_aicc(likelihoods_3[burnin:], 3, num_times)
+  aicc_4 = eval.calculate_aicc(likelihoods_4[burnin:], 4, num_times)
+  aicc_5 = eval.calculate_aicc(likelihoods_5[burnin:], 5, num_times)
 
   aiccs = np.array([aicc_1, aicc_2, aicc_3, aicc_4, aicc_5])
   optimal_num_steps_aicc_content = np.argmin(aiccs) + 1
@@ -78,39 +79,40 @@ def make_ecdf_inputs(data, return_all = False, mcmc_steps=10000, burnin=100):
 
   # simulate data under hypoexponenetial
 
-  simulated_data_under_hypo_fitted_rates = None
+  sim_data = None
   ks_max_likelihood_optimal = None
   if optimal_num_steps_aicc_content == 1:
     ks_max_likelihood_optimal = ks_max_likelihood_1
     min_rate = np.min(ks_max_likelihood_optimal)
     upper_time_bound = int(1/min_rate*10*1.5)
-    simulated_data_under_hypo_fitted_rates = gillespie.sim_gillespie_one_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
+    sim_data = gillespie.sim_gillespie_one_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
   elif optimal_num_steps_aicc_content == 2:
     ks_max_likelihood_optimal = ks_max_likelihood_2
     min_rate = np.min(ks_max_likelihood_optimal)
     upper_time_bound = int(1/min_rate*10*1.5)
-    simulated_data_under_hypo_fitted_rates = gillespie.sim_gillespie_two_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
+    sim_data = gillespie.sim_gillespie_two_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
   elif optimal_num_steps_aicc_content == 3:
     ks_max_likelihood_optimal = ks_max_likelihood_3
     min_rate = np.min(ks_max_likelihood_optimal)
     upper_time_bound = int(1/min_rate*10*1.5)
-    simulated_data_under_hypo_fitted_rates = gillespie.sim_gillespie_three_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
+    sim_data = gillespie.sim_gillespie_three_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
   elif optimal_num_steps_aicc_content == 4:
     ks_max_likelihood_optimal = ks_max_likelihood_4
     min_rate = np.min(ks_max_likelihood_optimal)
     upper_time_bound = int(1/min_rate*10*1.5)
-    simulated_data_under_hypo_fitted_rates = gillespie.sim_gillespie_four_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
+    sim_data = gillespie.sim_gillespie_four_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
   elif optimal_num_steps_aicc_content == 5:
     ks_max_likelihood_optimal = ks_max_likelihood_5
     min_rate = np.min(ks_max_likelihood_optimal)
     upper_time_bound = int(1/min_rate*10*1.5)
-    simulated_data_under_hypo_fitted_rates = gillespie.sim_gillespie_five_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
+    sim_data = gillespie.sim_gillespie_five_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
 
   if return_all:
     kmax_all = (ks_max_likelihood_1, ks_max_likelihood_2, ks_max_likelihood_3, ks_max_likelihood_4, ks_max_likelihood_5)
     ks_all = (ks_1[:, burnin:], ks_2[:, burnin:], ks_3[:, burnin:], ks_4[:, burnin:], ks_5[:, burnin:])
-    likelihoods_all = [likelihoods_1[burnin:], likelihoods_2[burnin:], likelihoods_3[burnin:], likelihoods_4[burnin:], likelihoods_5[burnin:]]
-    return {'best_k': ks_max_likelihood_optimal, 'sim_data' : simulated_data_under_hypo_fitted_rates, 'all_ks' : ks_all,
+    likelihoods_all = [likelihoods_1[burnin:], likelihoods_2[burnin:],
+                       likelihoods_3[burnin:], likelihoods_4[burnin:], likelihoods_5[burnin:]]
+    return {'best_k': ks_max_likelihood_optimal, 'sim_data' : sim_data, 'all_ks' : ks_all,
             'all_likelihood': likelihoods_all, 'each_best_k' : kmax_all, 'aicc' : aiccs}
   else:
-    return ks_max_likelihood_optimal, simulated_data_under_hypo_fitted_rates
+    return ks_max_likelihood_optimal, sim_data
