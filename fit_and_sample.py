@@ -5,10 +5,9 @@
 import numpy as np
 import scipy
 
-from core import conv_1_exps, conv_2_exps, conv_3_exps, conv_4_exps, conv_5_exps
-from core import calculate_aicc
-from fits import do_mcmc
-from gillespie import sim_gillespie_five_step, sim_gillespie_four_step, sim_gillespie_three_step, sim_gillespie_two_step, sim_gillespie_one_step
+from . import core
+from . import fits
+from . import gillespie
 
 # dwell times to ecdf
 def dwell_times_to_ecdf(dwell_times):
@@ -41,37 +40,37 @@ def make_ecdf_inputs(data, return_all = False, mcmc_steps=10000, burnin=100):
 
 
   # fit and simulate for 1
-  ks_1, likelihoods_1 = do_mcmc(mcmc_steps, 1, data, conv_1_exps)
+  ks_1, likelihoods_1 = fits.do_mcmc(mcmc_steps, 1, data, core.conv_1_exps)
   max_likelihood_idx_1 = np.argmax(likelihoods_1)
   ks_max_likelihood_1 = ks_1[:, max_likelihood_idx_1]
 
   # fit and simulate for 2
-  ks_2, likelihoods_2 = do_mcmc(mcmc_steps, 2, data, conv_2_exps)
+  ks_2, likelihoods_2 = fits.do_mcmc(mcmc_steps, 2, data, core.conv_2_exps)
   max_likelihood_idx_2 = np.argmax(likelihoods_2)
   ks_max_likelihood_2 = ks_2[:, max_likelihood_idx_2]
 
   # fit and simulate for 3
-  ks_3, likelihoods_3 = do_mcmc(mcmc_steps, 3, data, conv_3_exps)
+  ks_3, likelihoods_3 = fits.do_mcmc(mcmc_steps, 3, data, core.conv_3_exps)
   max_likelihood_idx_3 = np.argmax(likelihoods_3)
   ks_max_likelihood_3 = ks_3[:, max_likelihood_idx_3]
 
   # fit and simulate for 4
-  ks_4, likelihoods_4 = do_mcmc(mcmc_steps, 4, data, conv_4_exps)
+  ks_4, likelihoods_4 = fits.do_mcmc(mcmc_steps, 4, data, core.conv_4_exps)
   max_likelihood_idx_4 = np.argmax(likelihoods_4)
   ks_max_likelihood_4 = ks_4[:, max_likelihood_idx_4]
 
   # fit and simulate for 5
-  ks_5, likelihoods_5 = do_mcmc(mcmc_steps, 5, data, conv_5_exps)
+  ks_5, likelihoods_5 = fits.do_mcmc(mcmc_steps, 5, data, core.conv_5_exps)
   max_likelihood_idx_5 = np.argmax(likelihoods_5)
   ks_max_likelihood_5 = ks_5[:, max_likelihood_idx_5]
 
 
   # find optimal number for N, aicc
-  aicc_1 = calculate_aicc(likelihoods_1[burnin:], 1, num_times)
-  aicc_2 = calculate_aicc(likelihoods_2[burnin:], 2, num_times)
-  aicc_3 = calculate_aicc(likelihoods_3[burnin:], 3, num_times)
-  aicc_4 = calculate_aicc(likelihoods_4[burnin:], 4, num_times)
-  aicc_5 = calculate_aicc(likelihoods_5[burnin:], 5, num_times)
+  aicc_1 = core.calculate_aicc(likelihoods_1[burnin:], 1, num_times)
+  aicc_2 = core.calculate_aicc(likelihoods_2[burnin:], 2, num_times)
+  aicc_3 = core.calculate_aicc(likelihoods_3[burnin:], 3, num_times)
+  aicc_4 = core.calculate_aicc(likelihoods_4[burnin:], 4, num_times)
+  aicc_5 = core.calculate_aicc(likelihoods_5[burnin:], 5, num_times)
 
   aiccs = np.array([aicc_1, aicc_2, aicc_3, aicc_4, aicc_5])
   optimal_num_steps_aicc_content = np.argmin(aiccs) + 1
@@ -85,27 +84,27 @@ def make_ecdf_inputs(data, return_all = False, mcmc_steps=10000, burnin=100):
     ks_max_likelihood_optimal = ks_max_likelihood_1
     min_rate = np.min(ks_max_likelihood_optimal)
     upper_time_bound = int(1/min_rate*10*1.5)
-    simulated_data_under_hypo_fitted_rates = sim_gillespie_one_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
+    simulated_data_under_hypo_fitted_rates = gillespie.sim_gillespie_one_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
   elif optimal_num_steps_aicc_content == 2:
     ks_max_likelihood_optimal = ks_max_likelihood_2
     min_rate = np.min(ks_max_likelihood_optimal)
     upper_time_bound = int(1/min_rate*10*1.5)
-    simulated_data_under_hypo_fitted_rates = sim_gillespie_two_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
+    simulated_data_under_hypo_fitted_rates = gillespie.sim_gillespie_two_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
   elif optimal_num_steps_aicc_content == 3:
     ks_max_likelihood_optimal = ks_max_likelihood_3
     min_rate = np.min(ks_max_likelihood_optimal)
     upper_time_bound = int(1/min_rate*10*1.5)
-    simulated_data_under_hypo_fitted_rates = sim_gillespie_three_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
+    simulated_data_under_hypo_fitted_rates = gillespie.sim_gillespie_three_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
   elif optimal_num_steps_aicc_content == 4:
     ks_max_likelihood_optimal = ks_max_likelihood_4
     min_rate = np.min(ks_max_likelihood_optimal)
     upper_time_bound = int(1/min_rate*10*1.5)
-    simulated_data_under_hypo_fitted_rates = sim_gillespie_four_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
+    simulated_data_under_hypo_fitted_rates = gillespie.sim_gillespie_four_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
   elif optimal_num_steps_aicc_content == 5:
     ks_max_likelihood_optimal = ks_max_likelihood_5
     min_rate = np.min(ks_max_likelihood_optimal)
     upper_time_bound = int(1/min_rate*10*1.5)
-    simulated_data_under_hypo_fitted_rates = sim_gillespie_five_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
+    simulated_data_under_hypo_fitted_rates = gillespie.sim_gillespie_five_step(ks_max_likelihood_optimal, num_times, upper_time_bound)
 
   if return_all:
     kmax_all = (ks_max_likelihood_1, ks_max_likelihood_2, ks_max_likelihood_3, ks_max_likelihood_4, ks_max_likelihood_5)
