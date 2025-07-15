@@ -104,11 +104,11 @@ def simulate_conv_exps(convolution_func, rates, num_times=300, upper_time_bound=
   return dwell_times
 
 # perform mcmc
-def do_mcmc(num_iters, num_rates, datas, conv_func):
+def do_mcmc(num_iters, num_rates, datas, conv_func, bounds = [0, 1]):
 
   # initialize values
-  low_bound = 0
-  high_bound = 1
+  low_bound = bounds[0]
+  high_bound = bounds[1]
   k_current = np.random.uniform(low=low_bound, high=high_bound, size=num_rates)
   temperature = 1
 
