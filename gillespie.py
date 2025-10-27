@@ -7,7 +7,7 @@ import time
 import bionetgen
 import inspect
 import numpy as np
-from pysb.pathfinder import set_pata, get_pathh
+from pysb.pathfinder import set_path, get_path
 
 from pysb import Model, Monomer, Parameter, Initial, Rule, Observable
 from pysb.simulator.bng import BngSimulator
