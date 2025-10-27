@@ -7,12 +7,15 @@ import time
 import bionetgen
 import inspect
 import numpy as np
-from pysb.pathfinder import set_path
+from pysb.pathfinder import set_pata, get_pathh
 
 from pysb import Model, Monomer, Parameter, Initial, Rule, Observable
 from pysb.simulator.bng import BngSimulator
 
-set_path('bng', '/usr/local/lib/python3.11/dist-packages/bionetgen/bng-linux')
+try:
+  get_path('bng')
+except Exception:
+  set_path('bng', '/usr/local/lib/python3.11/dist-packages/bionetgen/bng-linux')
 print(inspect.getfile(bionetgen))
 
 def sim_gillespie_five_step(rates, num_times, upper_time_bound):
