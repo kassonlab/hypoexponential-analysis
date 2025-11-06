@@ -1,6 +1,7 @@
 # Code 2025 by Peter Kasson
 
 import numpy as np
+import scipy
 import core
 import eval
 import fits

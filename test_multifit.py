@@ -12,7 +12,16 @@ import scipy.io as io
 
 from matplotlib.gridspec import GridSpec
 
+import eval
 import multifit
+
+import scipy.stats
+def bootstrap_nmin(waitingtimes, confidence_interval=0.9):
+  """calculate max-likelihihood and confidence interval for nmin"""
+  nmin = 1/eval.calculate_randomness_parameter(waitingtimes)
+  bootstrap_randomness = scipy.stats.bootstrap((waitingtimes,), eval.calculate_randomness_parameter,
+                                     method='percentile', confidence_level=0.9)
+  return nmin, 1/bootstrap_randomness.confidence_interval.low, 1/bootstrap_randomness.confidence_interval.high
 
 # Read fusion times
 lipid_mixing_temp = {}
